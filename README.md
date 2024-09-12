@@ -1,5 +1,9 @@
 # Chi Healthcheck Middleware
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/pmatteo/chi-healthcheck-middleware)](https://goreportcard.com/report/github.com/pmatteo/chi-healthcheck-middleware)
+
+![GitHub Release](https://img.shields.io/github/v/release/pmatteo/chi-healthcheck-middleware?include_prereleases&display_name=tag&style=flat-square)
+
 This Go package provides middleware for an HTTP server to manage health check endpoints, such as liveness, readiness, and startup checks. Inspired by [Fiber's health check middleware](https://github.com/gofiber/fiber), it brings similar functionality to the `net/http` package in Go, allowing for easy integration with monitoring tools, load balancers, or orchestrators like Kubernetes.
 
 ## Configuring the Middleware
