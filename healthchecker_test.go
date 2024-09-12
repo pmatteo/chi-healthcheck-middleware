@@ -1,4 +1,4 @@
-package healthcheck
+package healthcheck_test
 
 import (
 	"io"
@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/go-chi/chi/v5"
+	healthcheck "github.com/pmatteo/chi-healthcheck-middleware"
 	"github.com/stretchr/testify/require"
 )
 
@@ -49,11 +50,7 @@ func Test_HealthCheck_Strict_Routing_Default(t *testing.T) {
 
 	router := chi.NewRouter()
 
-	router.Use(NewHealthChecker(
-		WithEndpointDefaultProbe(DefaultLivenessEndpoint),
-		WithEndpointDefaultProbe(DefaultReadinessEndpoint),
-		WithEndpointDefaultProbe(DefaultStartupEndpoint),
-	))
+	router.Use(healthcheck.NewHealthChecker())
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("Hello World"))
 	})
@@ -77,7 +74,7 @@ func Test_HealthCheck_Default(t *testing.T) {
 
 	router := chi.NewRouter()
 
-	router.Use(NewHealthChecker())
+	router.Use(healthcheck.NewHealthChecker())
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("Hello World"))
 	})
@@ -99,9 +96,9 @@ func Test_HealthCheck_Custom(t *testing.T) {
 	router := chi.NewRouter()
 	c1 := make(chan struct{}, 1)
 
-	router.Use(NewHealthChecker(
-		WithEndpointDefaultProbe("/live"),
-		WithEndpoint("/ready", func(r *http.Request) bool {
+	router.Use(healthcheck.NewHealthChecker(
+		healthcheck.WithEndpointDefaultProbe("/live"),
+		healthcheck.WithEndpoint("/ready", func(r *http.Request) bool {
 			select {
 			case <-c1:
 				return true
@@ -109,7 +106,7 @@ func Test_HealthCheck_Custom(t *testing.T) {
 				return false
 			}
 		}),
-		WithEndpoint(DefaultStartupEndpoint, func(r *http.Request) bool {
+		healthcheck.WithEndpoint(healthcheck.DefaultStartupEndpoint, func(r *http.Request) bool {
 			return false
 		}),
 	))
@@ -145,9 +142,9 @@ func Test_HealthCheck_Custom_Nested(t *testing.T) {
 	router := chi.NewRouter()
 	c1 := make(chan struct{}, 1)
 
-	router.Use(NewHealthChecker(
-		WithEndpointDefaultProbe("/probe/live"),
-		WithEndpoint("/probe/ready", func(r *http.Request) bool {
+	router.Use(healthcheck.NewHealthChecker(
+		healthcheck.WithEndpointDefaultProbe("/probe/live"),
+		healthcheck.WithEndpoint("/probe/ready", func(r *http.Request) bool {
 			select {
 			case <-c1:
 				return true
@@ -189,13 +186,10 @@ func Test_HealthCheck_Next(t *testing.T) {
 	router := chi.NewRouter()
 
 	router.Use(
-		NewHealthChecker(
-			WithNext(func(r *http.Request) bool {
+		healthcheck.NewHealthChecker(
+			healthcheck.WithNext(func(r *http.Request) bool {
 				return true
 			}),
-			WithEndpointDefaultProbe(DefaultLivenessEndpoint),
-			WithEndpointDefaultProbe(DefaultReadinessEndpoint),
-			WithEndpointDefaultProbe(DefaultStartupEndpoint),
 		),
 	)
 
@@ -213,9 +207,9 @@ func Test_HealthCheck_Next(t *testing.T) {
 
 func Benchmark_HealthCheck(b *testing.B) {
 	router := chi.NewRouter()
-	router.Use(NewHealthChecker())
+	router.Use(healthcheck.NewHealthChecker())
 
-	req := httptest.NewRequest(http.MethodGet, DefaultLivenessEndpoint, nil)
+	req := httptest.NewRequest(http.MethodGet, healthcheck.DefaultLivenessEndpoint, nil)
 	b.ReportAllocs()
 	b.ResetTimer()
 
@@ -233,9 +227,9 @@ func Benchmark_HealthCheck_Parallel(b *testing.B) {
 		_, _ = w.Write([]byte("Hello World"))
 	})
 
-	router.Use(NewHealthChecker())
+	router.Use(healthcheck.NewHealthChecker())
 
-	req := httptest.NewRequest(http.MethodGet, DefaultLivenessEndpoint, nil)
+	req := httptest.NewRequest(http.MethodGet, healthcheck.DefaultLivenessEndpoint, nil)
 	b.ReportAllocs()
 	b.ResetTimer()
 
