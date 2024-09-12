@@ -23,17 +23,17 @@ jobs:
       - name: Checkout v4
         uses: actions/checkout@v4
 
-      - name: Go setup v4
-        uses: actions/setup-go@v4
+      - name: Go setup v5
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.22
+          go-version: 1.23
           check-latest: true
 
       - name: Verify dependencies
         run: go mod verify
 
       - name: Run go vet
-        run: go mod verify
+        run: go vet ./...
       
       - name: Run staticcheck
         run: go run honnef.co/go/tools/cmd/staticcheck@latest -checks=all,-ST1000,-U1000 ./...
@@ -42,7 +42,7 @@ jobs:
         run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
     
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v6
         with:
           install-mode: binary
           version: latest
@@ -65,8 +65,8 @@ jobs:
       - name: Checkout v4
         uses: actions/checkout@v4
 
-      - name: Go setup v4
-        uses: actions/setup-go@v4
+      - name: Go setup v5
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
           check-latest: true
