@@ -4,7 +4,9 @@
 
 ![GitHub Release](https://img.shields.io/github/v/release/pmatteo/chi-healthcheck-middleware?display_name=tag&style=flat-square)
 
-This Go package provides middleware for an HTTP server to manage health check endpoints, such as liveness, readiness, and startup checks. Inspired by [Fiber's health check middleware](https://github.com/gofiber/fiber), it brings similar functionality to the `net/http` package in Go, allowing for easy integration with monitoring tools, load balancers, or orchestrators like Kubernetes.
+This Go package provides middleware for an HTTP server to manage health check endpoints, such as liveness, readiness, and startup checks. Inspired by [Fiber's health check middleware](https://github.com/gofiber/fiber), it brings similar functionality to the [`go-chi`](https://github.com/go-chi/chi) package in Go, allowing for easy integration with monitoring tools, load balancers, or orchestrators like Kubernetes.
+
+> Due to `chi`'s design, which directly builds on Go's `net/http` package, this middleware is fully compatible with the standard library, just like any other `chi` middleware.
 
 ## Configuring the Middleware
 
@@ -33,34 +35,37 @@ If no configuration options are provided, the middleware by default define three
 To illustrate how to use the `NewHealthChecker` middleware, consider the following example:
 
 ```Go
-
 func main() {
- // Define a custom probe function that implements custom logic to check application health
- customProbe := func(r *http.Request) bool {
-  // Example logic: return true if healthy, false otherwise
-  return true
- }
+  // Define a custom probe function that implements custom logic to check application health
+  customProbe := func(r *http.Request) bool {
+    // Example logic: return true if healthy, false otherwise
+    return true
+  }
 
- // Set up the health check middleware with different configurations
- healthMiddleware := healthcheck.NewHealthChecker(
-  healthcheck.WithEndpointDefaultProbe("/health"), // Adds a default health check endpoint at /health
-  healthcheck.WithEndpoint("/custom-health", customProbe), // Adds a custom health check endpoint at /custom-health
-  healthcheck.WithNext(func(r *http.Request) bool {
-   // Skips the middleware if the request path is /skip-health-check
-   return r.URL.Path == "/skip-health-check"
-  }),
- )
+  // Set up the health check middleware with different configurations
+  healthMiddleware := healthcheck.NewHealthChecker(
+    healthcheck.WithEndpointDefaultProbe("/health"), // Adds a default health check endpoint at /health
+    healthcheck.WithEndpoint("/custom-health", customProbe), // Adds a custom health check endpoint at /custom-health
+    healthcheck.WithNext(func(r *http.Request) bool {
+    // Skips the middleware if the request path starts with /api prefix
+    return strings.HasPrefix(r.URL.Path, "api/")
+    }),
+  )
 
  // Define your main HTTP handler
- mainHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-  w.Write([]byte("Hello, World!"))
- })
+  router := chi.NewRouter()
 
- // Apply the health check middleware to the main handler
- http.Handle("/", healthMiddleware(mainHandler))
+  router.Use(NewHealthChecker(
+    WithEndpointDefaultProbe(DefaultLivenessEndpoint),
+    WithEndpointDefaultProbe(DefaultReadinessEndpoint),
+    WithEndpointDefaultProbe(DefaultStartupEndpoint),
+  ))
+  router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+    _, _ = w.Write([]byte("Hello World"))
+  })
 
- // Start the HTTP server
- http.ListenAndServe(":8080", nil)
+  // Start the HTTP server
+  http.ListenAndServe(":8080", router)
 }
 ```
 
