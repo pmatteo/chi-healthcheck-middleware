@@ -36,36 +36,31 @@ To illustrate how to use the `NewHealthChecker` middleware, consider the followi
 
 ```Go
 func main() {
-  // Define a custom probe function that implements custom logic to check application health
-  customProbe := func(r *http.Request) bool {
-    // Example logic: return true if healthy, false otherwise
-    return true
-  }
+ // Define a custom probe function that implements custom logic to check application health
+ customProbe := func(r *http.Request) bool {
+  // Example logic: return true if healthy, false otherwise
+  return true
+ }
 
-  // Set up the health check middleware with different configurations
-  healthMiddleware := healthcheck.NewHealthChecker(
-    healthcheck.WithEndpointDefaultProbe("/health"), // Adds a default health check endpoint at /health
-    healthcheck.WithEndpoint("/custom-health", customProbe), // Adds a custom health check endpoint at /custom-health
-    healthcheck.WithNext(func(r *http.Request) bool {
-    // Skips the middleware if the request path starts with /api prefix
-    return strings.HasPrefix(r.URL.Path, "api/")
-    }),
-  )
+ // Set up the health check middleware with different configurations
+ healthMiddleware := healthcheck.NewHealthChecker(
+  healthcheck.WithEndpointDefaultProbe("/health"),         // Adds a default health check endpoint at /health
+  healthcheck.WithEndpoint("/custom-health", customProbe), // Adds a custom health check endpoint at /custom-health
+  healthcheck.WithNext(func(r *http.Request) bool {
+   // Skips the middleware if the request path starts with /api prefix
+   return strings.HasPrefix(r.URL.Path, "api/")
+  }),
+ )
 
- // Define your main HTTP handler
-  router := chi.NewRouter()
+ router := chi.NewRouter()
 
-  router.Use(NewHealthChecker(
-    WithEndpointDefaultProbe(DefaultLivenessEndpoint),
-    WithEndpointDefaultProbe(DefaultReadinessEndpoint),
-    WithEndpointDefaultProbe(DefaultStartupEndpoint),
-  ))
-  router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-    _, _ = w.Write([]byte("Hello World"))
-  })
+ router.Use(healthMiddleware)
+ router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+  _, _ = w.Write([]byte("Hello World"))
+ })
 
-  // Start the HTTP server
-  http.ListenAndServe(":8080", router)
+ // Start the HTTP server
+ http.ListenAndServe(":3000", router)
 }
 ```
 
