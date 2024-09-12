@@ -55,7 +55,7 @@ func Test_HealthCheck_Strict_Routing_Default(t *testing.T) {
 		WithEndpointDefaultProbe(DefaultStartupEndpoint),
 	))
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World"))
+		_, _ = w.Write([]byte("Hello World"))
 	})
 
 	ts := httptest.NewServer(router)
@@ -79,7 +79,7 @@ func Test_HealthCheck_Default(t *testing.T) {
 
 	router.Use(NewHealthChecker())
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World"))
+		_, _ = w.Write([]byte("Hello World"))
 	})
 
 	ts := httptest.NewServer(router)
@@ -115,7 +115,7 @@ func Test_HealthCheck_Custom(t *testing.T) {
 	))
 
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World"))
+		_, _ = w.Write([]byte("Hello World"))
 	})
 
 	ts := httptest.NewServer(router)
@@ -158,7 +158,7 @@ func Test_HealthCheck_Custom_Nested(t *testing.T) {
 	))
 
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World"))
+		_, _ = w.Write([]byte("Hello World"))
 	})
 
 	ts := httptest.NewServer(router)
@@ -200,7 +200,7 @@ func Test_HealthCheck_Next(t *testing.T) {
 	)
 
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World"))
+		_, _ = w.Write([]byte("Hello World"))
 	})
 
 	ts := httptest.NewServer(router)
@@ -230,7 +230,7 @@ func Benchmark_HealthCheck_Parallel(b *testing.B) {
 	router := chi.NewRouter()
 
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World"))
+		_, _ = w.Write([]byte("Hello World"))
 	})
 
 	router.Use(NewHealthChecker())
