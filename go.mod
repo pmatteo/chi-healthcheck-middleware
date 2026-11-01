@@ -1,9 +1,9 @@
 module github.com/pmatteo/chi-healthcheck-middleware
 
-go 1.23.0
+go 1.24
 
 require (
-	github.com/go-chi/chi/v5 v5.2.5
+	github.com/go-chi/chi/v5 v5.5.0
 	github.com/stretchr/testify v1.11.1
 )
 
